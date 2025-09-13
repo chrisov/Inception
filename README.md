@@ -112,4 +112,4 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 
 ## Wordpress
 
-Nginx cannot handle PHP scripts directly 	
+Nginx cannot handle PHP scripts directly 
