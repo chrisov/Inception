@@ -65,8 +65,11 @@ Nginx is an open source web server and reverse proxy service.
 The Dockerfile for Nginx is quite simple:
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfile.png" width="400" alt="nginx dockerfile"/>
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/05c9ca967a11cf28b231eb06a3621e936c5bd8cc/srcs/requirements/nginx/dfile.png" width="400" alt="nginx dockerfile"/>
+  <br>
+  Figure: Nginx Dockerfile
 </div>
+<br>
 
 This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/80`. If the engine started correctly, we will be able to see a Nginx welcome message! To test it, we build and run the container:
 
@@ -104,16 +107,22 @@ Wordpress is an open source Content Management System (CMS), which basically mea
 
 The Dockerfile for PHP is quite simple:
 
-<!-- <div align="center">
-  <img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfie.png" width="400" alt="nginx dockerfile"/>
-</div> -->
+<div align="center">
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/05c9ca967a11cf28b231eb06a3621e936c5bd8cc/srcs/requirements/wordpress/dfile.png" width="400" alt="nginx dockerfile"/>
+  <br>
+  Figure: Worpress Dockerfile
+</div>
+  <br>
+
+
+This Dockerfile starts the container on a PHP image, copies the configuration file from the project's directory into the container, since that file is already properly modified and it will allow the communication with Nginx to happen. 
 
 ```
 $ docker build -t wordpress srcs/requirements/wordpress/.
 $ docker run wordpress
 ```
 
-This Dockerfile starts the container on a PHP image, copies the configuration file from the project's directory into the container, since that file is already properly modified and it will allow the communication with Nginx to happen. Without proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, `/usr/local/etc/php-fpm.d/www.config` and set up the communicaton channel in port 9000.
+Without proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, `/usr/local/etc/php-fpm.d/www.config` and set up the communicaton channel in port 9000.
 
 **IMPORTANT**: The PHP's `-F` flag, is used, similarly to Ngnix, to bring the running process on the foreground, so that the container can remain alive and running. WIthout it, the container would start the process and then exit.
 
