@@ -31,11 +31,13 @@ The project's main components of the setup are explained in the following sectio
 
 ## Nginx
 
-Nginx is an open source web server and reverse proxy. It can work as the traffic controller for web requests: deciding what happens when a user’s browser asks for something (like a web page or image).
+Nginx is an open source web server and reverse proxy service. 
 
-- It can serve the files directly, when the user is visiting `https://example.com`, Nginx looks for the corresponding .html file and returns it.
+- It can work as the traffic controller for web requests: deciding what happens when a user’s browser asks for something (like a web page or image).
 
-- It can also work as *reverse proxy*, to forward requests to another service, such as a backend app, it sends that request to the corresponding service.
+- It can serve the files directly: when the user is visiting `https://example.com`, Nginx looks for the corresponding .html file and returns it.
+
+- It can also work as *reverse proxy*: forwards requests to another service, such as a backend app.
 
 - It can also handle encryption (TLS/SSL certificates), so that apps don't need to.
 
@@ -59,7 +61,15 @@ Nginx is an open source web server and reverse proxy. It can work as the traffic
 | `$ sudo systemctl reload nginx`  | Reloads config without downtime                                       |
 | `$ sudo systemctl stop nginx`    | Stops Nginx service                                                   |
 
+### Dockerfile
 
+The Dockerfile for Nginx is quite simple:
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfile.png" alt="nginx dockerfile"/>
+</div>
+
+This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/80`. If the engine started correctly, we will be able to see a Nginx welcome message!
 
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
