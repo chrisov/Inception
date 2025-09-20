@@ -65,15 +65,17 @@ Nginx is an open source web server and reverse proxy service.
 The Dockerfile for Nginx is quite simple:
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfie.png" width="400" alt="nginx dockerfile"/>
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfile.png" width="400" alt="nginx dockerfile"/>
 </div>
 
 This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/80`. If the engine started correctly, we will be able to see a Nginx welcome message! To test it, we build and run the container:
 
 ```
-$ docker build -t nginx srcs/requirements/nginx/
-$ sudo docker run -d -p 80:80 nginx
+$ docker build -t nginx srcs/requirements/nginx/.
+$ docker run -d -p 80:80 nginx
 ```
+
+We have already copied and modified the configuration file `/etc/nginx/sites-available/default`, from inside the container outside, in order to set up the communication with the PHP, by opening up port 9000. After that, we have to replace the original configuration file, with the modified one.
 
 **IMPORTANT**: The Nginx's `-g "daemon off;"` flag sets a global configuration directive from the command line, instead of only from the configuration file (nginx.conf), as it disables Nginx's defaut behavior of running in the background, as a deamon. Instead, with this directive, the process remains in the foreground, so the Docker container can stay alive and running, with it as its main process.
 
@@ -83,7 +85,7 @@ $ sudo docker run -d -p 80:80 nginx
 
 <br>
 
-## Wordpress
+## Wordpress / PHP
 
 Wordpress is an open source Content Management System (CMS), which basically means that it lets the user build websites and blogs, without coding everything from scratch. It is written in PHP and uses a MySQL/MariaDB database. When a request requires PHP execution (like loading a WordPress page), Nginx passes the request to PHP-FPM (FastCGI Process Manager), then returns the reuslt back to the Nginx, and finally Nginx sends it back to the client.
 
@@ -96,9 +98,24 @@ Wordpress is an open source Content Management System (CMS), which basically mea
 
 ### Technical details
 
-Without the proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, which is located in
-`/usr/local/php-fpm.d/`s.
 
+
+### Dockerfile
+
+The Dockerfile for PHP is quite simple:
+
+<!-- <div align="center">
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfie.png" width="400" alt="nginx dockerfile"/>
+</div> -->
+
+```
+$ docker build -t wordpress srcs/requirements/wordpress/.
+$ docker run wordpress
+```
+
+This Dockerfile starts the container on a PHP image, copies the configuration file from the project's directory into the container, since that file is already properly modified and it will allow the communication with Nginx to happen. Without proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, `/usr/local/etc/php-fpm.d/www.config` and set up the communicaton channel in port 9000.
+
+**IMPORTANT**: The PHP's `-F` flag, is used, similarly to Ngnix, to bring the running process on the foreground, so that the container can remain alive and running. WIthout it, the container would start the process and then exit.
 
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
