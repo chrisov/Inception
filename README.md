@@ -41,14 +41,6 @@ Nginx is an open source web server and reverse proxy service.
 
 - It can also handle encryption (TLS/SSL certificates), so that apps don't need to.
 
-### Technical details
-
-| Ports               | Logs                                    |
-|---------------------|-----------------------------------------|
-| 80 (Default HTTP)   | /var/log/nginx/access.log (Access logs) |
-| 443 (Default HTTPS) | /var/log/nginx/error.log (Error logs)   |
-
-
 ### Installation / run
 
 | Command                          | Description                                                           |
@@ -61,15 +53,52 @@ Nginx is an open source web server and reverse proxy service.
 | `$ sudo systemctl reload nginx`  | Reloads config without downtime                                       |
 | `$ sudo systemctl stop nginx`    | Stops Nginx service                                                   |
 
+### Configuration
+
+| Ports               | Logs                                    |
+|---------------------|-----------------------------------------|
+| 80 (Default HTTP)   | /var/log/nginx/access.log (Access logs) |
+| 443 (Default HTTPS) | /var/log/nginx/error.log (Error logs)   |
+
 ### Dockerfile
 
 The Dockerfile for Nginx is quite simple:
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfile.png" alt="nginx dockerfile"/>
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/98c83c3cada1504650dc281bfa5f58f5d1e2bafc/srcs/requirements/nginx/dfie.png" width="400" alt="nginx dockerfile"/>
 </div>
 
-This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/80`. If the engine started correctly, we will be able to see a Nginx welcome message!
+This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/80`. If the engine started correctly, we will be able to see a Nginx welcome message! To test it, we build and run the container:
+
+```
+$ docker build -t nginx srcs/requirements/nginx/
+$ sudo docker run -d -p 80:80 nginx
+```
+
+**IMPORTANT**: The Nginx's `-g "daemon off;"` flag sets a global configuration directive from the command line, instead of only from the configuration file (nginx.conf), as it disables Nginx's defaut behavior of running in the background, as a deamon. Instead, with this directive, the process remains in the foreground, so the Docker container can stay alive and running, with it as its main process.
+
+<div align="right">
+  <a href="#top">⬆️ Return to top</a>
+</div>
+
+<br>
+
+## Wordpress
+
+Wordpress is an open source Content Management System (CMS), which basically means that it lets the user build websites and blogs, without coding everything from scratch. It is written in PHP and uses a MySQL/MariaDB database. When a request requires PHP execution (like loading a WordPress page), Nginx passes the request to PHP-FPM (FastCGI Process Manager), then returns the reuslt back to the Nginx, and finally Nginx sends it back to the client.
+
+
+### Installation / run
+
+| Command                          | Description                                                           |
+|----------------------------------|-----------------------------------------------------------------------|
+| `$ sudo apt install php-fpm`       | Downaloads and installs PHP-FPM                                         |
+
+### Technical details
+
+Without the proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, which is located in
+`/usr/local/php-fpm.d/`s.
+
 
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
@@ -118,8 +147,3 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 </div>
 
 <br>
-
-
-## Wordpress
-
-Nginx cannot handle PHP scripts directly 
