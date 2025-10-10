@@ -41,24 +41,23 @@ Nginx is an open source web server and reverse proxy service.
 
 - It can also handle encryption (TLS/SSL certificates), so that apps don't need to.
 
+
 ### Installation / run
 
-| Command                          | Description                                                           |
-|----------------------------------|-----------------------------------------------------------------------|
-| `$ sudo apt install nginx`       | Downaloads and installs Nginx                                         |
-| `$ sudo systemctl start nginx`   | Starts the Nginx service immediately                                  |
-| `$ sudo systemctl enable nginx`  | Ensures Nginx service boots automatically whenever the server reboots |
-| `$ sudo systemctl status nginx`  | Shows if the Nginx service is running and listening on ports          |
-| `$ sudo systemctl restart nginx` | Restarts after config changes                                         |
-| `$ sudo systemctl reload nginx`  | Reloads config without downtime                                       |
-| `$ sudo systemctl stop nginx`    | Stops Nginx service                                                   |
+<div align="center">
 
-### Configuration
+  | Command                          | Description                                                           |
+  |----------------------------------|-----------------------------------------------------------------------|
+  | `$ sudo apt install nginx`       | Downaloads and installs Nginx                                         |
+  | `$ sudo systemctl start nginx`   | Starts the Nginx service immediately                                  |
+  | `$ sudo systemctl enable nginx`  | Ensures Nginx service boots automatically whenever the server reboots |
+  | `$ sudo systemctl status nginx`  | Shows if the Nginx service is running and listening on ports          |
+  | `$ sudo systemctl restart nginx` | Restarts after config changes                                         |
+  | `$ sudo systemctl reload nginx`  | Reloads config without downtime                                       |
+  | `$ sudo systemctl stop nginx`    | Stops Nginx service                                                   |
 
-| Ports               | Logs                                    |
-|---------------------|-----------------------------------------|
-| 80 (Default HTTP)   | /var/log/nginx/access.log (Access logs) |
-| 443 (Default HTTPS) | /var/log/nginx/error.log (Error logs)   |
+</div>
+
 
 ### Dockerfile
 
@@ -82,6 +81,19 @@ We have already copied and modified the configuration file `/etc/nginx/sites-ava
 
 **IMPORTANT**: The Nginx's `-g "daemon off;"` flag sets a global configuration directive from the command line, instead of only from the configuration file (nginx.conf), as it disables Nginx's defaut behavior of running in the background, as a deamon. Instead, with this directive, the process remains in the foreground, so the Docker container can stay alive and running, with it as its main process.
 
+
+### Configuration
+
+<div align="center">
+
+| Ports               | Logs                                    |
+|---------------------|-----------------------------------------|
+| 80 (Default HTTP)   | /var/log/nginx/access.log (Access logs) |
+| 443 (Default HTTPS) | /var/log/nginx/error.log (Error logs)   |
+
+</div>
+
+
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
 </div>
@@ -95,12 +107,9 @@ Wordpress is an open source Content Management System (CMS), which basically mea
 
 ### Installation / run
 
-| Command                          | Description                                                           |
-|----------------------------------|-----------------------------------------------------------------------|
-| `$ sudo apt install php-fpm`       | Downaloads and installs PHP-FPM                                         |
-
-### Technical details
-
+| Command                       | Description                     |
+|-------------------------------|---------------------------------|
+| `$ sudo apt install php-fpm`  | Downaloads and installs PHP-FPM |
 
 
 ### Dockerfile
@@ -122,9 +131,13 @@ $ docker build -t wordpress srcs/requirements/wordpress/.
 $ docker run wordpress
 ```
 
-Without proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, `/usr/local/etc/php-fpm.d/www.config` and set up the communicaton channel in port 9000.
+  Without proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to acces the PHP-FPM's pool configuration file, `/usr/local/etc/php-fpm.d/www.conf` and set up the communicaton channel in port 9000.
 
 **IMPORTANT**: The PHP's `-F` flag, is used, similarly to Ngnix, to bring the running process on the foreground, so that the container can remain alive and running. WIthout it, the container would start the process and then exit.
+
+### Technical details
+
+aSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
 
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
@@ -143,17 +156,6 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 - It can control which user can have access to which database.
 
 
-### Technical details
-
-| SQL Commands | Constraints | Configuration                           |
-|--------------|-------------|-----------------------------------------|
-| CREATE	   | PRIMARY KEY | /etc/mysql/mariadb.conf.d/50-server.cnf |
-| INSERT       | FOREIGN KEY | 3306 (Default Port)                     |
-| DELETE
-| SELECT
-| UPDATE
-
-
 ### Installation / run
 
 | Command                               | Description                               |
@@ -166,6 +168,21 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 | `$ sudo systemctl restart mariadb`    | Restarts after config changes             |
 | `$ sudo systemctl stop mariadb`       | Stops MariaDB engine                      |
 | `$ sudo mysql_secure_installation`    |                                           |
+
+
+### Dockerfile
+
+
+
+### Technical details
+
+| SQL Commands | Constraints | Configuration                           |
+|--------------|-------------|-----------------------------------------|
+| CREATE	   | PRIMARY KEY | /etc/mysql/mariadb.conf.d/50-server.cnf |
+| INSERT       | FOREIGN KEY | 3306 (Default Port)                     |
+| DELETE
+| SELECT
+| UPDATE
 
 
 <div align="right">
