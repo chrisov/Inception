@@ -132,10 +132,10 @@ Wordpress is an open source Content Management System (CMS), which basically mea
 
 ### 3.2 Dockerfile
 
-The Dockerfile for PHP:
+The Dockerfile for WP-PHP:
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/chrisov/Inception/05c9ca967a11cf28b231eb06a3621e936c5bd8cc/srcs/requirements/wordpress/dfile.png" width="400" alt="nginx dockerfile"/>
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/37d4d53ec64d2ed7c2a0bfa2b9c6751c59f177f6/srcs/requirements/wordpress/dfile.png" width="700" alt="nginx dockerfile"/>
   <br>
   Figure F3.2.1: Worpress Dockerfile
 </div>
