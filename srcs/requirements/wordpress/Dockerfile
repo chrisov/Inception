@@ -19,6 +19,8 @@ RUN apt install -y curl
 RUN rm -rf /var/lib/apt/lists/*
 
 COPY www.conf /etc/php/8.2/fpm/pool.d/.
+
+# CMD ["/usr/sbin/php-fpm8.2", "-F"]
 COPY script.sh .
 RUN chmod +x script.sh
 

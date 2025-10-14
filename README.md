@@ -29,7 +29,9 @@ The project's main components of the setup are explained in the following sectio
 
 <br>
 
-## 2. Nginx
+## 2. Docker Compose
+
+## 3. Nginx
 
 Nginx is an open source web server and reverse proxy service. 
 
@@ -42,7 +44,7 @@ Nginx is an open source web server and reverse proxy service.
 - It can also handle encryption (TLS/SSL certificates), so that apps don't need to.
 
 
-### 2.1 Installation / run
+### 3.1 Installation / run
 
 <div align="center">
 
@@ -50,7 +52,7 @@ Nginx is an open source web server and reverse proxy service.
 |----------------------------------|-------------------------------|
 | `$ sudo apt install nginx`       | Downaloads and installs Nginx |
 
-Table T2.1.1: Nginx intallation command
+Table T3.1.1: Nginx intallation command
 
 </div>
 <br>
@@ -67,14 +69,14 @@ Table T2.1.1: Nginx intallation command
 <br>
 
 
-### 2.2 Dockerfile
+### 3.2 Dockerfile
 
 The Dockerfile for Nginx:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/chrisov/Inception/05c9ca967a11cf28b231eb06a3621e936c5bd8cc/srcs/requirements/nginx/dfile.png" width="400" alt="nginx dockerfile"/>
   <br>
-  Figure F2.2.1: Nginx Dockerfile
+  Figure F3.2.1: Nginx Dockerfile
 </div>
 <br>
 
@@ -86,16 +88,16 @@ We have already copied and modified the configuration file `/etc/nginx/sites-ava
 
 ### 2.3 Single Container
 
-Running the single container is useful when first setting up the service, to check if there is any misconfiguration in the Dockerfile. It's important to remember though to keep it as simple as possible. In the case of the Nginx service, we don't want to copy any configuration file back into the container, as this will override any default global instructions and make the container listen for the wp-php's container's port 9000.
+Running the single container is useful when first setting up the service, to check if there is any misconfiguration in the Dockerfile. In the case of the Nginx service, we don't want to copy any configuration file back into the container, as this will override any default global instructions and make the container listen for the wp-php's container's port 9000.
 
 If we uncomment that part (*line 8*), the container can stay alive and running and we can then check for the specific port in the localhost for Nginx's welcome message. Otherwise the container's creation will **fail**. To test it, we build and run the container:
 
 ```
-$ docker build -t nginx srcs/requirements/nginx/.
-$ docker run -d -p 80:80 nginx
+$ docker build -t nginx {path_to_dockerfile}
+$ docker run -d -p 8080:80 nginx
 ```
 
-This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/80`. If the engine started correctly, we will be able to see a Nginx welcome message!
+This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/8080`. If the engine started correctly, we will be able to see a Nginx welcome message!
 
 
 
@@ -149,16 +151,36 @@ This Dockerfile starts the container on a PHP image, copies the configuration fi
 **IMPORTANT**: The PHP's `-F` flag, is used, similarly to Ngnix, to bring the running process on the foreground, so that the container can remain alive and running. Without it, the container would start the process and then exit.
 
 
-### 3.3 Single Container
+### 3.3 Double Containers
 
-As was the case for Nginx, if we want to run a single wp-php container, we need to uncomment any lines that mess the default global configurations (line 20), as it makes the container listen in the port 9000 instead of the localhost. After that building and running the single container is straight-forward: 
+As was the case for Nginx, to run a single wp-php container, in combination with the Nginx service of course, we need to configure the default global configurations, to make it listen for the appropriate port.
+
+Create a custom test network for both of the container to communicate through:
+
+```$ docker network create {network_name}```
+
+Modify the www.conf file to listen to any IP in the network `listen = 0.0.0.0:9000` (the network is only gonna include the two containers). Then we build the container, commenting out the lines that correspond to the running script (line 23, 24) and modify the command to call the executable in the foreground `CMD ["/usr/sbin/php-fpm8.2", "-F"]`:
+
+```$ docker build -t wp-php-simple {path_to_dockerfile}```
+
+Run the container with a few parameters:
+
+```$ docker run -d --network {network_name} --volume "$(pwd)/../web/":/var/www/html/ wp-php-simple```
+
+Extract the IP Address of the running container:
+
+```$ docker inspect -f {cont_name} | grep "IP"```
+
+Modify the nginx default configuration file to use that same IP address `fastcgi_pass {IP_Address}:9000`
+
+Build and run the Nginx container:
 
 ```
-$ docker build -t wordpress srcs/requirements/wordpress/.
-$ docker run wordpress
+$ docker build -t nginx {path_to_dockerfile}
+$ docker run -d --network {network_name} --volume "$(pwd)/../web/":/var/www/html/ -p 8080:80 nginx
 ```
 
-**We can check that the service is up and running (TODO)**
+Both of the containers should be up and running. We put any simple test .html or .php file in the web subdirectory (the shared one) and if access the specified localhost port we should be able to render it.
 
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
