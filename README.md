@@ -50,7 +50,7 @@ Nginx is an open source web server and reverse proxy service.
 
 | Command                          | Description                   |
 |----------------------------------|-------------------------------|
-| `$ sudo apt install nginx`       | Downaloads and installs Nginx |
+| `$ sudo apt install nginx`       | Downloads and installs Nginx |
 
 Table T3.1.1: Nginx intallation command
 
@@ -86,7 +86,7 @@ We have already copied and modified the configuration file `/etc/nginx/sites-ava
 **IMPORTANT**: The Nginx's `-g "daemon off;"` flag sets a global configuration directive from the command line, instead of only from the configuration file (nginx.conf), as it disables Nginx's defaut behavior of running in the background, as a deamon. Instead, with this directive, the process remains in the foreground, so the container's process can stay alive and running.
 
 
-### 2.3 Single Container
+### 3.3 Single Container
 
 Running the single container is useful when first setting up the service, to check if there is any misconfiguration in the Dockerfile. In the case of the Nginx service, we don't want to copy any configuration file back into the container, as this will override any default global instructions and make the container listen for the wp-php's container's port 9000.
 
@@ -107,12 +107,12 @@ This Dockerfile starts the web server and is listening for requests. We can alre
 
 <br>
 
-## 3. Wordpress / PHP
+## 4. Wordpress / PHP
 
 Wordpress is an open source Content Management System (CMS), which basically means that it lets the user build websites and blogs, without coding everything from scratch. It is written in PHP and uses a MySQL/MariaDB database. When a request requires PHP execution (like loading a WordPress page), Nginx passes the request to PHP-FPM (FastCGI Process Manager), then returns the result back to the Nginx, and finally Nginx sends it back to the client.
 
 
-### 3.1 Installation / run
+### 4.1 Installation / run
 
 <div align="center">
   
@@ -127,19 +127,19 @@ Wordpress is an open source Content Management System (CMS), which basically mea
 | `$ wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg` | Download and Trust the Key |
 | `$ echo "..."`                      | Add the Repository URL         |
 
-  Table T3.1.1: Wordpress Dockerfile dependencies.
+  Table T4.1.1: Wordpress Dockerfile dependencies.
 </div>
 <br>
 
 
-### 3.2 Dockerfile
+### 4.2 Dockerfile
 
 The Dockerfile for WP-PHP:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/chrisov/Inception/37d4d53ec64d2ed7c2a0bfa2b9c6751c59f177f6/srcs/requirements/wordpress/dfile.png" width="700" alt="nginx dockerfile"/>
   <br>
-  Figure F3.2.1: Worpress Dockerfile
+  Figure F4.2.1: Worpress Dockerfile
 </div>
   <br>
 
@@ -151,7 +151,7 @@ This Dockerfile starts the container on a PHP image, copies the configuration fi
 **IMPORTANT**: The PHP's `-F` flag, is used, similarly to Ngnix, to bring the running process on the foreground, so that the container can remain alive and running. Without it, the container would start the process and then exit.
 
 
-### 3.3 Double Containers
+### 4.3 Double Containers
 
 As was the case for Nginx, to run a single wp-php container, in combination with the Nginx service of course, we need to configure the default global configurations, to make it listen for the appropriate port.
 
@@ -159,7 +159,7 @@ Create a custom test network for both of the container to communicate through:
 
 ```$ docker network create {network_name}```
 
-Modify the www.conf file to listen to any IP in the network `listen = 0.0.0.0:9000` (the network is only gonna include the two containers). Then we build the container, commenting out the lines that correspond to the running script (line 23, 24) and modify the command to call the executable in the foreground `CMD ["/usr/sbin/php-fpm8.2", "-F"]`:
+Modify the www.conf file to listen to any IP in the network `listen = 0.0.0.0:9000` (the network is only gonna include the two containers). Modify the command to call the executable in the foreground `CMD ["/usr/sbin/php-fpm8.2", "-F"]`, then build the container, commenting out the lines that correspond to the running script (line 23, 24):
 
 ```$ docker build -t wp-php-simple {path_to_dockerfile}```
 
@@ -171,9 +171,8 @@ Extract the IP Address of the running container:
 
 ```$ docker inspect -f {cont_name} | grep "IP"```
 
-Modify the nginx default configuration file to use that same IP address `fastcgi_pass {IP_Address}:9000`
-
-Build and run the Nginx container:
+Modify the nginx default configuration file to use that same IP address `fastcgi_pass {IP_Address}:9000` as the wp-php container.
+Build and run the Nginx container with the appropriate parameters:
 
 ```
 $ docker build -t nginx {path_to_dockerfile}
@@ -188,7 +187,7 @@ Both of the containers should be up and running. We put any simple test .html or
 
 <br>
 
-## 4. MariaDB
+## 5. MariaDB
 
 MariaDB is an open source database management system, similar to MySQL in terms of commands and protocols, that the user can use to store, organize, and query structured data in the format of tables, with rows and columns. 
 
@@ -199,7 +198,7 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 - It can control which user can have access to which database.
 
 
-### 4.1 Installation / run
+### 5.1 Installation / run
 
 | Command                               | Description                               |
 |---------------------------------------|-------------------------------------------|
@@ -213,11 +212,11 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 | `$ sudo mysql_secure_installation`    |                                           |
 
 
-### 4.2 Dockerfile
+### 5.2 Dockerfile
 
 
 
-### 4.3 Technical details
+### 5.3 Technical details
 
 | SQL Commands | Constraints | Configuration                           |
 |--------------|-------------|-----------------------------------------|
