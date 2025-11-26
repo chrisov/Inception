@@ -1,4 +1,4 @@
-#
+version: '3.8'
 services:
   nginx:
     build: requirements/nginx
@@ -11,7 +11,7 @@ services:
     volumes:
       - ../web:/var/www/html
     networks:
-      inception:
+      - inception
   wordpress:
     build: requirements/wordpress
     container_name: wp-php
@@ -20,15 +20,19 @@ services:
     volumes:
       - ../web:/var/www/html
     networks:
-      inception:
+      - inception
   mariadb:
     build: requirements/mariadb
     container_name: mariadb
+    env_file:
+      - .env
     volumes:
       - ./database:/var/lib/mysql
     networks:
-      inception:
+      - inception
 
 networks:
-      inception:
+  inception:
+    driver: bridge
+
 
