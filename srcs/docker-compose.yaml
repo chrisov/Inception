@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   nginx:
     build: requirements/nginx
@@ -13,6 +12,8 @@ services:
     networks:
       - inception
   wordpress:
+    env_file:
+      - .env
     build: requirements/wordpress
     container_name: wp-php
     depends_on:
