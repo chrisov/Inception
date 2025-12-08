@@ -13,8 +13,6 @@ up:
 down:
 	@echo "$(BLUE)Stopping LEMP stack...$(NC)"
 	$(COMPOSE) down
-	@rm -rf database 
-	@rm -rf ../web 
 
 logs:
 	@echo "$(BLUE)Displaying logs (Ctrl+C to exit)...$(NC)"
@@ -36,6 +34,8 @@ ps:
 clean:
 	@echo "$(BLUE)Removing containers, networks, and volumes...$(NC)"
 	$(COMPOSE) down
+	@rm -rf database
+	@rm -rf ../web
 
 help:
 	@echo "Available commands:"
