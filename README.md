@@ -232,3 +232,59 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 </div>
 
 <br>
+
+
+
+VM
+
+1. create the droplet (ubuntu desktop)
+
+2. ssh root@<DROPLET_PUBLIC_IP>
+
+sudo apt update && sudo apt upgrade -y
+sudo apt update
+sudo apt install xubuntu-desktop -y
+sudo apt install xfce4 xfce4-goodies tigervnc-standalone-server x11-xserver-utils xterm dbus-x11 -y
+sudo apt install xfce4-terminal xfce4-panel xfce4-session -y
+sudo apt install tigervnc-common -y
+sudo apt install x11-xserver-utils -y
+sudo apt install lxde -y
+
+nano ~/.vnc/xstartup
+
+  #!/bin/bash
+  [ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+
+  export XKL_XMODMAP_DISABLE=1
+
+  unset SESSION_MANAGER
+  unset DBUS_SESSION_BUS_ADDRESS
+
+  exec startxfce4
+
+chmod +x ~/.vnc/xstartup
+adduser vncuser
+su - vncuser
+vncserver :1
+
+vncserver -list : Should show the running process
+
+ss -tulnp | grep 5901: should display '0.0.0.0:5901'
+if it displays 'localhost:5901', configure firewall in the droplet:
+
+  sudo ufw status
+  sudo ufw allow 5901/tcp
+  sudo ufw reload
+
+nano ~/.vnc/config
+  localhost=no
+
+
+3. host machine
+
+vncviewer <DROPLET_PUBLIC_IP>:5901
+USER PASSWORD
+
+
+
+
