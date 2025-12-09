@@ -310,6 +310,22 @@ sudo usermod -aG docker $USER
 sudo snap install code --classic
 
 
+<!-- if ssh hangs -->
+from recovery console:
+  sudo pkill -f 'sshd:'
+  sudo systemctl restart sshd
+sudo ufw status
+sudo ufw allow 22/tcp
+sudo ufw reload
 
+
+EXIT THE SSH SESSION
+ssh vncuser@<DROPLET_IP>
+sudo usermod -aG docker vncuser
+exit
+ssh vncuser@<DROPLET_IP>
+
+CHECK
+  docker ps
 
 
