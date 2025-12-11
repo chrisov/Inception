@@ -8,7 +8,7 @@ NC = \033[0m
 
 up:
 	@echo "$(GREEN)Starting LEMP stack...$(NC)"
-	$(COMPOSE) up
+	$(COMPOSE) up -d
 
 down:
 	@echo "$(BLUE)Stopping LEMP stack...$(NC)"

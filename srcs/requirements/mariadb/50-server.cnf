@@ -4,8 +4,11 @@
 
 # this is read by the standalone daemon and embedded servers
 [server]
-
-init_file = /etc/mysql/init.sql
+# Note: removed `init_file` here — the official MariaDB Docker image
+# executes any SQL placed in `/docker-entrypoint-initdb.d/` during
+# initialization. Setting `init_file` to a path inside `/etc` caused
+# mariadbd to attempt to create/write `/etc/mysql/init.sql` and abort
+# when that file/directory wasn't writable in-container.
 
 # this is only for the mariadbd daemon
 [mariadbd]
@@ -14,7 +17,7 @@ init_file = /etc/mysql/init.sql
 # * Basic Settings
 #
 
-user                    = root
+user                    = mysql
 pid-file                = /run/mysqld/mysqld.pid
 basedir                 = /usr
 datadir                 = /var/lib/mysql
@@ -26,7 +29,9 @@ tmpdir                  = /tmp
 
 # Instead of skip-networking the default is now to listen only on
 # localhost which is more compatible and is not less secure.
-bind-address            = mariadb
+
+bind-address            = 0.0.0.0
+# bind-address            = mariadb
 
 #
 # * Fine Tuning
