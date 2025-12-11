@@ -9,7 +9,7 @@ services:
       - "8080:80"   # TODO: 8080 -> 443 in vm 
     volumes:
       - ../web:/var/www/html
-      # - ../certs:/etc/nginx/
+      - ./certs:/etc/nginx/certs/
     networks:
       - inception
     restart: always
