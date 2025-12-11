@@ -242,15 +242,13 @@ VM
 2. ssh root@<DROPLET_PUBLIC_IP>
 
 sudo apt update && sudo apt upgrade -y
+sudo apt update
 sudo apt install xubuntu-desktop -y
 sudo apt install xfce4 xfce4-goodies tigervnc-standalone-server x11-xserver-utils xterm dbus-x11 -y
-<!-- sudo apt install xfce4-terminal xfce4-panel xfce4-session -y -->
-<!-- sudo apt install tigervnc-common -y -->
-<!-- sudo apt install x11-xserver-utils -y -->
+sudo apt install xfce4-terminal xfce4-panel xfce4-session -y
+sudo apt install tigervnc-common -y
+sudo apt install x11-xserver-utils -y
 sudo apt install lxde -y
-adduser vncuser
-su - vncuser
-vncserver :1
 
 nano ~/.vnc/xstartup
 
@@ -265,6 +263,9 @@ nano ~/.vnc/xstartup
   exec startxfce4
 
 chmod +x ~/.vnc/xstartup
+adduser vncuser
+su - vncuser
+vncserver :1
 
 vncserver -list : Should show the running process
 
@@ -272,11 +273,10 @@ ss -tulnp | grep 5901: should display '0.0.0.0:5901'
 if it displays 'localhost:5901', configure firewall in the droplet:
 
   sudo ufw status
-  sudo ufw enable
   sudo ufw allow 5901/tcp
   sudo ufw reload
 
-nano ~/.vnc/config (?????)
+nano ~/.vnc/config
   localhost=no
 
 
@@ -285,47 +285,6 @@ nano ~/.vnc/config (?????)
 vncviewer <DROPLET_PUBLIC_IP>:5901
 USER PASSWORD
 
-<!-- install firefox -->
-sudo add-apt-repository ppa:mozillateam/ppa
-sudo apt update
-sudo apt install firefox-esr -y
-
-<!-- install docker -->
-sudo apt remove docker docker-engine docker.io containerd runc -y
-sudo apt update
-sudo apt install ca-certificates curl gnupg lsb-release -y
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-sudo docker --version
-sudo docker run hello-world
-sudo usermod -aG docker $USER
-
-
-<!-- install vscode -->
-sudo snap install code --classic
-
-
-<!-- if ssh hangs -->
-from recovery console:
-  sudo pkill -f 'sshd:'
-  sudo systemctl restart sshd
-sudo ufw status
-sudo ufw allow 22/tcp
-sudo ufw reload
-
-
-EXIT THE SSH SESSION
-ssh vncuser@<DROPLET_IP>
-sudo usermod -aG docker vncuser
-exit
-ssh vncuser@<DROPLET_IP>
-
-CHECK
-  docker ps
+scp -r 
 
 

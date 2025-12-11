@@ -12,6 +12,7 @@ services:
       # - ../certs:/etc/nginx/
     networks:
       - inception
+    restart: always
   wordpress:
     env_file:
       - .env
@@ -23,6 +24,7 @@ services:
       - ../web:/var/www/html
     networks:
       - inception
+    restart: always
   mariadb:
     build: requirements/mariadb
     container_name: mariadb
@@ -32,11 +34,26 @@ services:
       - ../database:/var/lib/mysql
     networks:
       - inception
+    restart: always
 
 networks:
   inception:
     driver: bridge
 
+# volumes:
+#   mariadb:
+#     name: mariadb
+#     # the volume is localy saved on the host
+#     # set to false as it needs to be created
+#     driver: local
+#     external: false
+#     # 1st option is setting where volume is
+#     # 2nd to access files from container and host
+#     # 3rd none as there is no disk partition
+#     driver_opts:
+#       device: "/home/ndziadzi/data/mariadb"
+#       o: bind
+#       type: none
 volumes:
   inception_database:
     driver: local

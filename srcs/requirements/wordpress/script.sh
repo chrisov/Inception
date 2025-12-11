@@ -8,3 +8,5 @@ chmod +x wp-cli.phar
 ./wp-cli.phar core install --url=localhost:8080 --title=inception --admin_user=dimi --admin_password=dimi --admin_email=dimi@google.com --allow-root
 
 php-fpm8.2 -F
+
+# use environmental variables
