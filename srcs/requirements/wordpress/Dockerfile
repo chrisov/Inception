@@ -20,7 +20,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 COPY www.conf /etc/php/8.2/fpm/pool.d/.
 
-COPY script.sh .
-RUN chmod +x script.sh
+COPY init.sh .
+RUN chmod +x init.sh
 
-CMD ["./script.sh"]
+CMD ["./init.sh"]
