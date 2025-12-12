@@ -44,22 +44,24 @@ if [ ! -f wp-config.php ]; then
 
     # Enable comment moderation by default
     ./wp-cli.phar option update comment_moderation 1 --allow-root
+fi
 
-    # Optionally create a non-admin user if env vars are provided
-    if [ -n "${WP_USER}" ] && [ -n "${WP_USER_PASSWORD}" ] && [ -n "${WP_USER_EMAIL}" ]; then
+# Ensure non-admin user exists (runs on every startup)
+if [ -n "${WP_USER}" ] && [ -n "${WP_USER_PASSWORD}" ] && [ -n "${WP_USER_EMAIL}" ]; then
+    echo "Checking WordPress user: ${WP_USER}"
+    # Try to create user; if it exists, skip gracefully
+    if ! ./wp-cli.phar user get "${WP_USER}" --field=ID --allow-root >/dev/null 2>&1; then
         echo "Creating additional WordPress user: ${WP_USER}"
-        # Try to create user; if it exists, skip gracefully
-        if ! ./wp-cli.phar user get "${WP_USER}" --field=ID --allow-root >/dev/null 2>&1; then
-            ./wp-cli.phar user create "${WP_USER}" "${WP_USER_EMAIL}" \
-                --role="${WP_USER_ROLE:-subscriber}" \
-                --user_pass="${WP_USER_PASSWORD}" \
-                --allow-root
-        else
-            echo "User ${WP_USER} already exists; skipping creation."
-        fi
+        ./wp-cli.phar user create "${WP_USER}" "${WP_USER_EMAIL}" \
+            --role="${WP_USER_ROLE:-subscriber}" \
+            --user_pass="${WP_USER_PASSWORD}" \
+            --allow-root >/dev/null
+        echo "Successfully created user: ${WP_USER}"
     else
-        echo "WP_USER, WP_USER_PASSWORD, or WP_USER_EMAIL not set; skipping additional user creation."
+        echo "User ${WP_USER} already exists."
     fi
+else
+    echo "WP_USER, WP_USER_PASSWORD, or WP_USER_EMAIL not set; skipping user check."
 fi
 
 # Start PHP-FPM

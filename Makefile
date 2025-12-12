@@ -40,13 +40,23 @@ build:
 	@echo "$(GREEN)Building services...$(NC)"
 	$(COMPOSE) up --build -d
 
-ps:
+status:
+	@echo "$(BLUE)Showing status of containers, networks, and volumes...$(NC)"
+	@echo "\n$(BLUE)Showing containers$(NC)"
 	$(COMPOSE) ps
+	@echo "\n$(BLUE)Showing volumes$(NC)"
+	docker volume ls
+	@echo "\n$(BLUE)Showing networks$(NC)"
+	docker network ls
 
 clean:
 	@echo "$(BLUE)Removing containers, networks, and volumes...$(NC)"
 	$(COMPOSE) down --volumes --remove-orphans
-# 	@rm -rf web/
+	@docker stop $$(docker ps -qa) 2>/dev/null || true
+	@docker rm $$(docker ps -qa) 2>/dev/null || true
+	@docker rmi -f $$(docker images -qa) 2>/dev/null || true
+	@docker network rm $$(docker network ls -q) 2>/dev/null || true
+	@docker volume rm $$(docker volume ls -q) 2>/dev/null || true
 
 help:
 	@echo "Available commands:"
@@ -60,4 +70,4 @@ help:
 	@echo "  make clean     - Remove containers + volumes"
 	@echo ""
 
-.PHONY: up down logs re restart build ps clean help
+.PHONY: up down logs re restart build status clean help
