@@ -1,25 +1,35 @@
 #!/bin/sh
 
+
 set -e
 
+
+# Configure MariaDB to listen on all network interfaces
 FILE=/etc/mysql/mariadb.conf.d/50-server.cnf
 
+
+# Change MariaDB to listen on all network interfaces (0.0.0.0) instead of just localhost.
 sed -i 's/^bind-address\s*=.*/bind-address = 0.0.0.0/' "$FILE"
 
-cat $FILE
 
+# Create and configure runtime socket directory for MariaDB
 mkdir -p /run/mysqld
 chown mysql:mysql /run/mysqld || true
+
 
 # Initialize data directory if not already done
 if [ ! -d /var/lib/mysql/mysql ]; then
 	echo "Initializing MariaDB data directory..."
+	# Set up the default databases and tables
 	mysql_install_db --user=mysql --datadir=/var/lib/mysql
 fi
 
+
+# Start MariaDB in safe mode without networking for initial setup
 mysqld_safe --skip-networking --user=mysql --socket=/run/mysqld/mysqld.sock &
 
-# Wait for socket to become available (up to 60 seconds)
+
+# Wait for MariaDB socket to become available (up to 60 seconds)
 echo "Waiting for MariaDB socket..."
 for i in $(seq 1 60); do
 	if mysqladmin --socket=/run/mysqld/mysqld.sock ping --silent 2>/dev/null; then
@@ -30,19 +40,8 @@ for i in $(seq 1 60); do
 	sleep 1
 done
 
-# until mysqladmin ping --silent; do
-# 	echo "WE ARE PINGING"
-# 	sleep 1
-# done
 
-# echo "we want to use database name -> $MYSQL_DATABASE"
-# echo "user -> $MYSQL_USER with password -> $MYSQL_PASS"
-# echo "did we get the password -> $MARIADB_ROOT_PASSWORD"
-# echo "then grant all privilages to him"
-
-# creating of actual db and the user through SQL syntax
-# most of them are self explanatory through naming
-# flushing the privileges mean that changes take effect
+# Create WordPress database and application user with necessary privileges
 mysql -u root -p${MYSQL_ROOT_PASSWORD} << EOF
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
@@ -50,36 +49,16 @@ GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
 FLUSH PRIVILEGES;
 EOF
 
-# echo "---------------------------------------"
-# echo "did we go through first part of mysql?"
-# echo "---------------------------------------"
 
+# Set the root password for local connections
 mysql -u root -p${MYSQL_ROOT_PASSWORD} << EOF
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 EOF
 
-# echo "what about mysql -u root exit value $?"
 
-# shuts down the mariaDB to restart with all the changes
-# afterwards it will run with networking enabled and in foreground
-# so it will have the fake PID1 from the container
-# ------------------------------------------------------
-# once again simpler version is possible thankfully
-# rather than -> /usr/bin/mariadb-admin we got below one
-# ------------------------------------------------------
-# echo "ARE WE GOING TO SHUT DOWN"
-
+# Shut down MariaDB to restart with networking enabled
 mysqladmin --socket=/run/mysqld/mysqld.sock -u root -p${MYSQL_ROOT_PASSWORD} shutdown
 
-# DEBUG FOR FINISHING THE MARIADB SETUP
-# echo "---------------------------------------"
-# echo "MARIADB FINISHED SETTING UP: LETS GOOO"
-# echo "---------------------------------------"
 
-# replacing the shell with mysqld process
-# making the change into PID1 as per above
-# ---------------------------------------
-# MariaDB explicitly rejects running as root, so --user=mysql is required
-# the Debian supremacy for use is clear
-# --------------------------------------
+# Start MariaDB daemon as mysql user (replaces shell process with PID 1)
 exec mysqld --user=mysql

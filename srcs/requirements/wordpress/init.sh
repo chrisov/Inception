@@ -1,20 +1,26 @@
 #!/bin/bash
 
+
 set -e
 
+
+# Set working directory for WordPress installation
 cd /var/www/html
 
-# Download WP-CLI if not exists
+
+# Download WP-CLI command-line tool if not already present
 if [ ! -f wp-cli.phar ]; then
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     chmod +x wp-cli.phar
 fi
 
-# Download WordPress core if not exists
+
+# Download and install WordPress core (one-time setup)
 if [ ! -f wp-config.php ]; then
+    # Download WordPress files
     ./wp-cli.phar core download --allow-root
     
-    # Wait for database to be ready using mysqladmin ping
+    # Wait for MariaDB to be ready before proceeding with setup
     echo "Waiting for database..."
     for i in $(seq 1 60); do
         if mysqladmin -h mariadb -u "${MYSQL_USER}" -p"${MYSQL_PASSWORD}" ping 2>/dev/null; then
@@ -25,7 +31,7 @@ if [ ! -f wp-config.php ]; then
         sleep 1
     done
     
-    # Create wp-config.php
+    # Generate WordPress configuration file with database credentials
     ./wp-cli.phar config create \
         --dbname="${MYSQL_DATABASE}" \
         --dbuser="${MYSQL_USER}" \
@@ -33,7 +39,7 @@ if [ ! -f wp-config.php ]; then
         --dbhost=mariadb \
         --allow-root
     
-    # Install WordPress
+    # Initialize WordPress database and create admin user
     ./wp-cli.phar core install \
         --url="${WP_URL}" \
         --title="${WP_TITLE}" \
@@ -42,16 +48,15 @@ if [ ! -f wp-config.php ]; then
         --admin_email="${DB_EMAIL}" \
         --allow-root
 
-    # Enable comment moderation by default
+    # Enable comment moderation so user comments require admin approval
     ./wp-cli.phar option update comment_moderation 1 --allow-root
 fi
 
-# Ensure non-admin user exists (runs on every startup)
+
+# Create or verify non-admin subscriber user (runs on every startup for idempotence)
 if [ -n "${WP_USER}" ] && [ -n "${WP_USER_PASSWORD}" ] && [ -n "${WP_USER_EMAIL}" ]; then
-    echo "Checking WordPress user: ${WP_USER}"
     # Try to create user; if it exists, skip gracefully
     if ! ./wp-cli.phar user get "${WP_USER}" --field=ID --allow-root >/dev/null 2>&1; then
-        echo "Creating additional WordPress user: ${WP_USER}"
         ./wp-cli.phar user create "${WP_USER}" "${WP_USER_EMAIL}" \
             --role="${WP_USER_ROLE:-subscriber}" \
             --user_pass="${WP_USER_PASSWORD}" \
@@ -64,5 +69,6 @@ else
     echo "WP_USER, WP_USER_PASSWORD, or WP_USER_EMAIL not set; skipping user check."
 fi
 
-# Start PHP-FPM
+
+# Start PHP-FPM service (replaces shell process with PID 1)
 exec php-fpm8.2 -F

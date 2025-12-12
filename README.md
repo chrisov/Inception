@@ -288,4 +288,4 @@ USER PASSWORD
 
 scp -r 
 
-
+curl -v -4 --connect-timeout 3 http://dchrysov.42.fr      # should fail/refuse (no port 80 listener)

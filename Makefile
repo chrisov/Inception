@@ -1,5 +1,6 @@
-SRCDIR = srcs
-LOGDIR = logs
+SRCDIR := srcs
+LOGDIR := logs
+DATADIR := /home/dchrysov/data
 COMPOSE_FILE = $(SRCDIR)/docker-compose.yml
 export COMPOSE_FILE
 
@@ -11,10 +12,18 @@ NC = \033[0m
 
 .DEFAULT_GOAL := help
 
-LOGDIR:
+logdir:
 	@mkdir -p $(LOGDIR)
 
-up:
+datadir:
+	@mkdir -p $(DATADIR)/database
+	@mkdir -p $(DATADIR)/web
+
+build: datadir
+	@echo "$(GREEN)Building services...$(NC)"
+	$(COMPOSE) up --build -d
+
+up: datadir
 	@echo "$(GREEN)Starting LEMP stack...$(NC)"
 	$(COMPOSE) up -d
 
@@ -22,32 +31,28 @@ down:
 	@echo "$(BLUE)Stopping LEMP stack...$(NC)"
 	$(COMPOSE) down
 
-logs: LOGDIR
+restart: datadir
+	@echo "$(GREEN)Restarting services...$(NC)"
+	$(COMPOSE) down
+	$(COMPOSE) up -d
+
+re: restart
+
+logs: logdir
 	@echo "$(BLUE)Writing service logs to $(LOGDIR)/...$(NC)"
 	$(COMPOSE) logs mariadb > $(LOGDIR)/mdb.log
 	$(COMPOSE) logs nginx > $(LOGDIR)/nginx.log
 	$(COMPOSE) logs wordpress > $(LOGDIR)/wp.log
 
-
-re: restart
-
-restart:
-	@echo "$(GREEN)Restarting services...$(NC)"
-	$(COMPOSE) down
-	$(COMPOSE) up -d
-
-build:
-	@echo "$(GREEN)Building services...$(NC)"
-	$(COMPOSE) up --build -d
-
 status:
-	@echo "$(BLUE)Showing status of containers, networks, and volumes...$(NC)"
+	@echo "\n$(BLUE)Showing status of containers, networks, and volumes...$(NC)"
 	@echo "\n$(BLUE)Showing containers$(NC)"
 	$(COMPOSE) ps
 	@echo "\n$(BLUE)Showing volumes$(NC)"
 	docker volume ls
 	@echo "\n$(BLUE)Showing networks$(NC)"
 	docker network ls
+	@echo "\n"
 
 clean:
 	@echo "$(BLUE)Removing containers, networks, and volumes...$(NC)"
@@ -57,6 +62,7 @@ clean:
 	@docker rmi -f $$(docker images -qa) 2>/dev/null || true
 	@docker network rm $$(docker network ls -q) 2>/dev/null || true
 	@docker volume rm $$(docker volume ls -q) 2>/dev/null || true
+	@rm -rf $(LOGDIR)
 
 help:
 	@echo "Available commands:"
@@ -70,4 +76,4 @@ help:
 	@echo "  make clean     - Remove containers + volumes"
 	@echo ""
 
-.PHONY: up down logs re restart build status clean help
+.PHONY: build up down restart re logs status clean help logdir datadir

@@ -8,7 +8,7 @@ services:
     ports:
       - "443:443"
     volumes:
-      - ../web:/var/www/html
+      - inception_web:/var/www/html
     networks:
       - inception
     env_file:
@@ -23,7 +23,7 @@ services:
       mariadb:
         condition: service_started
     volumes:
-      - ../web:/var/www/html
+      - inception_web:/var/www/html
     networks:
       - inception
     env_file:
@@ -37,7 +37,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ../database:/var/lib/mysql
+      - inception_database:/var/lib/mysql
     networks:
       - inception
     env_file:
@@ -53,6 +53,14 @@ networks:
 volumes:
   inception_database:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dchrysov/data/database
   inception_web:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dchrysov/data/web
 
