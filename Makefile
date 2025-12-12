@@ -64,6 +64,9 @@ clean:
 	@docker volume rm $$(docker volume ls -q) 2>/dev/null || true
 	@rm -rf $(LOGDIR)
 
+fclean: clean
+	@sudo rm -rf ~/data/*
+
 help:
 	@echo "Available commands:"
 	@echo ""
@@ -76,4 +79,4 @@ help:
 	@echo "  make clean     - Remove containers + volumes"
 	@echo ""
 
-.PHONY: build up down restart re logs status clean help logdir datadir
+.PHONY: build up down restart re logs status clean fclean help logdir datadir
