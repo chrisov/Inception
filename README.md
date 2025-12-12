@@ -263,15 +263,15 @@ nano ~/.vnc/xstartup
   exec startxfce4
 
 chmod +x ~/.vnc/xstartup
-adduser vncuser
-su - vncuser
+adduser dchrysov
+su - dchrysov
 vncserver :1
 
 vncserver -list : Should show the running process
 
 ss -tulnp | grep 5901: should display '0.0.0.0:5901'
-if it displays 'localhost:5901', configure firewall in the droplet:
 
+if it displays 'localhost:5901', configure firewall in the droplet:
   sudo ufw status
   sudo ufw allow 5901/tcp
   sudo ufw reload
@@ -289,3 +289,26 @@ USER PASSWORD
 scp -r 
 
 curl -v -4 --connect-timeout 3 http://dchrysov.42.fr      # should fail/refuse (no port 80 listener)
+
+cd opt/
+sudo wget 'https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US' -O firefox.tar.bz2
+sudo tar xJf firefox.tar.bz2
+sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
+firefox &
+sudo snap install code --classic
+
+
+sudo apt remove docker docker-engine docker.io containerd runc
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker $USER
+newgrp docker
+docker --version
+docker run hello-world
