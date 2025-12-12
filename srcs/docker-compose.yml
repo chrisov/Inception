@@ -3,62 +3,56 @@ services:
     build: requirements/nginx
     container_name: nginx
     depends_on:
-      - wordpress
-      - mariadb
+      wordpress:
+        condition: service_started
     ports:
-      - "8080:80"   # TODO: 8080 -> 443 in vm 
+      - "443:443"
     volumes:
       - ../web:/var/www/html
-      - ./certs:/etc/nginx/certs/
     networks:
       - inception
-    restart: always
-  wordpress:
     env_file:
       - .env
+    restart: always
+  
+  
+  wordpress:
     build: requirements/wordpress
     container_name: wp-php
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_started
     volumes:
       - ../web:/var/www/html
     networks:
       - inception
+    env_file:
+      - .env
     restart: always
+
+
   mariadb:
     build: requirements/mariadb
     container_name: mariadb
-    env_file:
-      - .env
+    ports:
+      - "3306:3306"
     volumes:
       - ../database:/var/lib/mysql
     networks:
       - inception
+    env_file:
+      - .env
     restart: always
+
 
 networks:
   inception:
     driver: bridge
 
-# volumes:
-#   mariadb:
-#     name: mariadb
-#     # the volume is localy saved on the host
-#     # set to false as it needs to be created
-#     driver: local
-#     external: false
-#     # 1st option is setting where volume is
-#     # 2nd to access files from container and host
-#     # 3rd none as there is no disk partition
-#     driver_opts:
-#       device: "/home/ndziadzi/data/mariadb"
-#       o: bind
-#       type: none
+
 volumes:
   inception_database:
     driver: local
-  # inception_web:
-  #   driver: local
-  # inception_certs:
-  #   driver: local
+  inception_web:
+    driver: local
 

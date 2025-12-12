@@ -1,7 +1,13 @@
-# change to other version
-FROM mariadb:11
+FROM debian:bookworm-slim
 
-COPY 50-server.cnf /etc/mysql/conf.d/50-server.cnf
-COPY init.sql /docker-entrypoint-initdb.d/init.sql
+# Prepare for package installation and cache clean-up
+RUN apt-get update && \
+    apt-get install -y mariadb-server && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN chown -R mysql:mysql /etc/mysql/conf.d /docker-entrypoint-initdb.d || true
+COPY init.sh /etc/mariadb/init.sh
+RUN chmod +x /etc/mariadb/init.sh
+
+WORKDIR /etc/mariadb
+ENTRYPOINT ["./init.sh"]

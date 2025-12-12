@@ -1,11 +1,12 @@
 #
-FROM debian:latest
+FROM debian:bookworm-slim
 
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install -y nginx
 RUN apt-get install -y curl
 
-COPY default /etc/nginx/sites-available/default
+COPY init.sh /init.sh
+RUN chmod +x ./init.sh
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/init.sh"]

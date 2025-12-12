@@ -276,6 +276,7 @@ if it displays 'localhost:5901', configure firewall in the droplet:
   sudo ufw allow 5901/tcp
   sudo ufw reload
 
+(?????)
 nano ~/.vnc/config
   localhost=no
 

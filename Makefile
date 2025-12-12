@@ -46,7 +46,7 @@ ps:
 clean:
 	@echo "$(BLUE)Removing containers, networks, and volumes...$(NC)"
 	$(COMPOSE) down --volumes --remove-orphans
-	@rm -rf web/
+# 	@rm -rf web/
 
 help:
 	@echo "Available commands:"
