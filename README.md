@@ -1,314 +1,535 @@
-<a name="top"></a>
-
-<div align="center">
-  <img src="https://www.dieter-schwarz-stiftung.de/files/Projects/Project%20logos/Logo_42HN-min.jpg" alt="Logo"/>
-</div>
-
-<br>
-<div align="center">
-
-### 🛠 Docker (Compose)
-
-</div>
-
-
-
 # Inception
 
-## 1. Overview
+> A Docker-based infrastructure project implementing a secure WordPress hosting environment with NGINX, MariaDB, and PHP-FPM.
 
-The project creates of a LEMP stack setup, using *Linux* as the host operating system, *Nginx* as the web server to handle HTTP requests, *MariaDB* as the relational database management system and *PHP* as the server side programming language to process requests and generate dynamic content. 
+[![42 Project](https://img.shields.io/badge/42-Project-blue)](https://42.fr)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-It offers *performance*, as Nginx can handle mulitple concurrent requests, with low memory usage and *flexibility* as it is able to work well with for modern high-traffic websites. 
+**Author:** dchrysov  
+**School:** 42  
+**Project:** Inception
 
-The project's main components of the setup are explained in the following sections.
+---
 
-<div align="right">
-  <a href="#top">⬆️ Return to top</a>
-</div>
+## 📋 Table of Contents
 
-<br>
+- [Overview](#overview)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Services](#services)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Troubleshooting](#troubleshooting)
+- [Security Considerations](#security-considerations)
+- [License](#license)
 
-## 2. Docker Compose
+---
 
-## 3. Nginx
+## 🎯 Overview
 
-Nginx is an open source web server and reverse proxy service. 
+**Inception** is a system administration and DevOps project from the 42 curriculum that focuses on containerization and infrastructure orchestration. The goal is to set up a small but production-ready infrastructure using Docker, composed of multiple services working together to host a WordPress website.
 
-- It can work as the traffic controller for web requests: deciding what happens when a user’s browser asks for something (like a web page or image).
+This project demonstrates:
+- Containerization best practices with custom Docker images
+- Service orchestration using Docker Compose
+- Secure networking and data persistence
+- SSL/TLS implementation for HTTPS
+- Infrastructure as Code (IaC) principles
 
-- It can serve the files directly: when the user is visiting `https://example.com`, Nginx looks for the corresponding .html file and returns it.
+### Key Objectives
 
-- It can also work as *reverse proxy*: forwards requests to another service, such as a backend app.
+- Build custom Docker images from scratch (Debian/Alpine base only)
+- Configure a multi-container application with proper networking
+- Implement secure HTTPS-only access via NGINX reverse proxy
+- Ensure data persistence through Docker volumes
+- Follow security best practices (no hardcoded passwords, proper isolation)
 
-- It can also handle encryption (TLS/SSL certificates), so that apps don't need to.
+---
 
+## ✨ Features
 
-### 3.1 Installation / run
+- **🔒 HTTPS Only**: Secure communication via TLSv1.3 on port 443
+- **🐳 Custom Containers**: All images built from scratch, no pre-built images from Docker Hub
+- **🔄 Auto-restart**: Containers automatically restart on failure
+- **💾 Persistent Data**: Database and web files stored in dedicated volumes
+- **🌐 Custom Domain**: Configured for `dchrysov.42.fr` with local hosts file
+- **👥 Multi-user Support**: Separate admin and regular WordPress users
+- **🚀 One-command Deploy**: Simple Makefile for building and running the stack
 
-<div align="center">
+---
 
-| Command                          | Description                   |
-|----------------------------------|-------------------------------|
-| `$ sudo apt install nginx`       | Downloads and installs Nginx |
+## 🏗️ Architecture
 
-Table T3.1.1: Nginx intallation command
-
-</div>
-<br>
-
-<div align="center">
-
-| Ports               | Logs                                    |
-|---------------------|-----------------------------------------|
-| 80 (Default HTTP)   | /var/log/nginx/access.log (Access logs) |
-| 443 (Default HTTPS) | /var/log/nginx/error.log (Error logs)   |
-
-  Table 2.1.2: Configuration details, useful for debugging.
-</div>
-<br>
-
-
-### 3.2 Dockerfile
-
-The Dockerfile for Nginx:
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/chrisov/Inception/05c9ca967a11cf28b231eb06a3621e936c5bd8cc/srcs/requirements/nginx/dfile.png" width="400" alt="nginx dockerfile"/>
-  <br>
-  Figure F3.2.1: Nginx Dockerfile
-</div>
-<br>
-
-
-We have already copied and modified the configuration file `/etc/nginx/sites-available/default`, from inside the container outside, in order to set up the communication with the PHP, by opening up port 9000. After that, we have to replace the original configuration file, with the modified one.
-
-**IMPORTANT**: The Nginx's `-g "daemon off;"` flag sets a global configuration directive from the command line, instead of only from the configuration file (nginx.conf), as it disables Nginx's defaut behavior of running in the background, as a deamon. Instead, with this directive, the process remains in the foreground, so the container's process can stay alive and running.
-
-
-### 3.3 Single Container
-
-Running the single container is useful when first setting up the service, to check if there is any misconfiguration in the Dockerfile. In the case of the Nginx service, we don't want to copy any configuration file back into the container, as this will override any default global instructions and make the container listen for the wp-php's container's port 9000.
-
-If we uncomment that part (*line 8*), the container can stay alive and running and we can then check for the specific port in the localhost for Nginx's welcome message. Otherwise the container's creation will **fail**. To test it, we build and run the container:
+The infrastructure consists of three main services running in isolated Docker containers:
 
 ```
-$ docker build -t nginx {path_to_dockerfile}
-$ docker run -d -p 8080:80 nginx
+┌─────────────────────────────────────────────────────────┐
+│                    Docker Host (VM)                     │
+│                                                         │
+│  ┌────────────┐        ┌─────────────┐                  │
+│  │   NGINX    │───────▶│  WordPress  │                  │
+│  │  (Port 443)│        │  + PHP-FPM  │                  │
+│  │  Reverse   │        │             │                  │
+│  │   Proxy    │        │  (Port 9000)│                  │
+│  └────────────┘        └──────┬──────┘                  │
+│       ▲                       │                         │
+│       │                       │                         │
+│   HTTPS (TLS)                 │                         │
+│       │                       ▼                         │
+│       │                ┌─────────────┐                  │
+│   [Client]             │   MariaDB   │                  │
+│                        │  (Port 3306)│                  │
+│                        │  Database   │                  │
+│                        └─────────────┘                  │
+│                                                         │
+│  Volumes: /home/dchrysov/data/                          │
+│    ├── database/  (MariaDB data)                        │
+│    └── web/       (WordPress files)                     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-This Dockerfile starts the web server and is listening for requests. We can already access it in the local port 80 `https://localhost/8080`. If the engine started correctly, we will be able to see a Nginx welcome message!
+**Network**: All containers communicate via a custom bridge network named `inception`.
 
+---
 
+## 📦 Prerequisites
 
-<div align="right">
-  <a href="#top">⬆️ Return to top</a>
-</div>
+### System Requirements
 
-<br>
+- **Virtual Machine** running Ubuntu/Debian Linux
+- **Minimum**: 2GB RAM, 2 CPU cores, 10GB disk space
+- **Recommended**: 4GB RAM, 4 CPU cores, 20GB disk space
 
-## 4. Wordpress / PHP
+### Software Requirements
 
-Wordpress is an open source Content Management System (CMS), which basically means that it lets the user build websites and blogs, without coding everything from scratch. It is written in PHP and uses a MySQL/MariaDB database. When a request requires PHP execution (like loading a WordPress page), Nginx passes the request to PHP-FPM (FastCGI Process Manager), then returns the result back to the Nginx, and finally Nginx sends it back to the client.
+- Docker Engine (v20.10+)
+- Docker Compose (v2.0+)
+- GNU Make
+- Root or sudo access
 
+### Network Requirements
 
-### 4.1 Installation / run
+- Ability to bind to port 443 (HTTPS)
+- Domain name configured in `/etc/hosts` (see [SETUP.md](SETUP.md))
 
-<div align="center">
-  
-| Command                             | Description                    |
-|-------------------------------------|--------------------------------|
-| `$ apt install php8.2-fpm`          | Downloads and installs PHP-FPM |
-| `$ apt install php8.2-mysql`        | Downloads and installs PHP-FPM |
-| `$ apt install apt-transport-https` | Enable HTTPS Support.          |
-| `$ apt install ca-certificates`     | Trust Secure Connections.      |
-| `$ apt install lsb-release`         | Identify the OS.               |
-| `$ apt install wget`                | Download Tool.                 |
-| `$ wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg` | Download and Trust the Key |
-| `$ echo "..."`                      | Add the Repository URL         |
+---
 
-  Table T4.1.1: Wordpress Dockerfile dependencies.
-</div>
-<br>
+## 🚀 Quick Start
 
+### 1. Clone the Repository
 
-### 4.2 Dockerfile
-
-The Dockerfile for WP-PHP:
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/chrisov/Inception/37d4d53ec64d2ed7c2a0bfa2b9c6751c59f177f6/srcs/requirements/wordpress/dfile.png" width="700" alt="nginx dockerfile"/>
-  <br>
-  Figure F4.2.1: Worpress Dockerfile
-</div>
-  <br>
-
-
-Without proper configuration, the two services (Ngnix, PHP) cannot communicate. To achieve that, we need to access the PHP-FPM's pool configuration file, `/etc/php/8.2/fpm/pool.d/www.conf` and set up the communicaton channel in port 9000.
-
-This Dockerfile starts the container on a PHP image, copies the configuration file from the project's directory into the container, since that file is already properly modified and it will allow the communication with Nginx to happen. 
-
-**IMPORTANT**: The PHP's `-F` flag, is used, similarly to Ngnix, to bring the running process on the foreground, so that the container can remain alive and running. Without it, the container would start the process and then exit.
-
-
-### 4.3 Double Containers
-
-As was the case for Nginx, to run a single wp-php container, in combination with the Nginx service of course, we need to configure the default global configurations, to make it listen for the appropriate port.
-
-Create a custom test network for both of the container to communicate through:
-
-```$ docker network create {network_name}```
-
-Modify the www.conf file to listen to any IP in the network `listen = 0.0.0.0:9000` (the network is only gonna include the two containers). Modify the command to call the executable in the foreground `CMD ["/usr/sbin/php-fpm8.2", "-F"]`, then build the container, commenting out the lines that correspond to the running script (line 23, 24):
-
-```$ docker build -t wp-php-simple {path_to_dockerfile}```
-
-Run the container with a few parameters:
-
-```$ docker run -d --network {network_name} --volume "$(pwd)/../web/":/var/www/html/ wp-php-simple```
-
-Extract the IP Address of the running container:
-
-```$ docker inspect -f {cont_name} | grep "IP"```
-
-Modify the nginx default configuration file to use that same IP address `fastcgi_pass {IP_Address}:9000` as the wp-php container.
-Build and run the Nginx container with the appropriate parameters:
-
-```
-$ docker build -t nginx {path_to_dockerfile}
-$ docker run -d --network {network_name} --volume "$(pwd)/../web/":/var/www/html/ -p 8080:80 nginx
+```bash
+git clone https://github.com/chrisov/Inception.git
+cd Inception
 ```
 
-Both of the containers should be up and running. We put any simple test .html or .php file in the web subdirectory (the shared one) and if access the specified localhost port we should be able to render it.
+### 2. Configure Environment
 
-<div align="right">
-  <a href="#top">⬆️ Return to top</a>
-</div>
+Edit `srcs/.env` with your desired configuration:
 
-<br>
+```bash
+nano srcs/.env
+```
 
-## 5. MariaDB
+**Important**: Change default passwords before deploying!
 
-MariaDB is an open source database management system, similar to MySQL in terms of commands and protocols, that the user can use to store, organize, and query structured data in the format of tables, with rows and columns. 
+### 3. Add Domain to Hosts File
 
-- It can connect data between tables using *primary* (unique IDs) and *foreign* keys (references).
+```bash
+echo "127.0.0.1 dchrysov.42.fr" | sudo tee -a /etc/hosts
+```
 
-- The user can insert, update delete and fetch data, using *SQL*.
+### 4. Build and Start Services
 
-- It can control which user can have access to which database.
+```bash
+make build
+```
 
+This command will:
+- Create required data directories
+- Build all Docker images from scratch
+- Start all containers in detached mode
 
-### 5.1 Installation / run
+### 5. Verify Installation
 
-| Command                               | Description                               |
-|---------------------------------------|-------------------------------------------|
-| `$ sudo apt install mariadb-server`   | Sets up the database engine in the system |
-| `$ sudo mysql -u root -p`             | Access MariaDB as root user               |
-| `$ sudo systemctl start mariadb`      | Start MariaDB engine                      |
-| `$ sudo systemctl enable mariadb`     | Enables MariaDB service on boot           |
-| `$ sudo systemctl status mariadb`     | Checks MariaDB service's status           |
-| `$ sudo systemctl restart mariadb`    | Restarts after config changes             |
-| `$ sudo systemctl stop mariadb`       | Stops MariaDB engine                      |
-| `$ sudo mysql_secure_installation`    |                                           |
+Check that all services are running:
 
+```bash
+make status
+```
 
-### 5.2 Dockerfile
+### 6. Access WordPress
 
+Open your browser and navigate to:
+```
+https://dchrysov.42.fr
+```
 
+**Note**: You'll see a browser warning about the self-signed certificate. This is expected. Accept the certificate to continue.
 
-### 5.3 Technical details
+### Default Credentials
 
-| SQL Commands | Constraints | Configuration                           |
-|--------------|-------------|-----------------------------------------|
-| CREATE	     | PRIMARY KEY | /etc/mysql/mariadb.conf.d/50-server.cnf |
-| INSERT       | FOREIGN KEY | 3306 (Default Port)                     |
-| DELETE
-| SELECT
-| UPDATE
+**Admin User:**
+- Username: `dimi`
+- Password: `dimi` (⚠️ Change this!)
 
+**Database User:**
+- Username: `wpuser`
+- Password: `wppass` (⚠️ Change this!)
 
-<div align="right">
-  <a href="#top">⬆️ Return to top</a>
-</div>
+For detailed installation instructions, see [SETUP.md](SETUP.md).
 
-<br>
+---
 
+## 📁 Project Structure
 
+```
+Inception/
+├── Makefile                      # Build and orchestration commands
+├── README.md                     # This file
+├── LICENSE                       # MIT License
+├── SETUP.md                      # Detailed setup instructions
+├── srcs/
+│   ├── docker-compose.yml        # Service orchestration
+│   ├── .env                      # Environment variables
+│   ├── requirements/
+│   │   ├── nginx/
+│   │   │   ├── Dockerfile        # NGINX container definition
+│   │   │   └── init.sh           # NGINX entrypoint script
+│   │   ├── wordpress/
+│   │   │   ├── Dockerfile        # WordPress + PHP-FPM container
+│   │   │   ├── init.sh           # WordPress setup script
+│   │   │   └── www.conf          # PHP-FPM pool configuration
+│   │   └── mariadb/
+│   │       ├── Dockerfile        # MariaDB container definition
+│   │       └── init.sh           # Database initialization script
+│   └── certs/                    # SSL certificates (generated)
+├── logs/                         # Service logs (generated)
+└── /home/dchrysov/data/          # Persistent data (on host)
+    ├── database/                 # MariaDB data files
+    └── web/                      # WordPress installation
+```
 
-VM
+---
 
-1. create the droplet (ubuntu desktop)
+## 🔧 Services
 
-2. ssh root@<DROPLET_PUBLIC_IP>
+### NGINX (Reverse Proxy)
 
-sudo apt update && sudo apt upgrade -y
-sudo apt update
-sudo apt install xubuntu-desktop -y
-sudo apt install xfce4 xfce4-goodies tigervnc-standalone-server x11-xserver-utils xterm dbus-x11 -y
-sudo apt install xfce4-terminal xfce4-panel xfce4-session -y
-sudo apt install tigervnc-common -y
-sudo apt install x11-xserver-utils -y
-sudo apt install lxde -y
+- **Image**: Custom built from Debian Bookworm
+- **Port**: 443 (HTTPS only)
+- **Function**: 
+  - SSL/TLS termination
+  - Reverse proxy to PHP-FPM
+  - Static file serving
+  - Security headers
 
-nano ~/.vnc/xstartup
+**Key Features:**
+- Self-signed SSL certificate generation
+- TLSv1.3 support
+- FastCGI proxy to WordPress container
 
-  #!/bin/bash
-  [ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+### WordPress + PHP-FPM
 
-  export XKL_XMODMAP_DISABLE=1
+- **Image**: Custom built from Debian Bookworm with PHP 8.2
+- **Port**: 9000 (internal, FastCGI)
+- **Function**:
+  - WordPress core installation
+  - PHP-FPM process manager
+  - WP-CLI for automation
 
-  unset SESSION_MANAGER
-  unset DBUS_SESSION_BUS_ADDRESS
+**Key Features:**
+- Automated WordPress installation
+- User creation and management
+- Comment moderation enabled
+- Database connection handling
 
-  exec startxfce4
+### MariaDB (Database)
 
-chmod +x ~/.vnc/xstartup
-adduser dchrysov
-su - dchrysov
-vncserver :1
+- **Image**: Custom built from Debian Bookworm
+- **Port**: 3306 (internal)
+- **Function**:
+  - MySQL-compatible database
+  - WordPress data storage
+  - User and privilege management
 
-vncserver -list : Should show the running process
+**Key Features:**
+- Automated database initialization
+- Secure password handling
+- Network-accessible configuration
+- Data persistence
 
-ss -tulnp | grep 5901: should display '0.0.0.0:5901'
+---
 
-if it displays 'localhost:5901', configure firewall in the droplet:
-  sudo ufw status
-  sudo ufw allow 5901/tcp
-  sudo ufw reload
+## ⚙️ Configuration
 
-(?????)
-nano ~/.vnc/config
-  localhost=no
+### Environment Variables
 
+All configuration is managed through `srcs/.env`:
 
-3. host machine
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DOMAIN_NAME` | Your domain name | `dchrysov.42.fr` |
+| `MYSQL_ROOT_PASSWORD` | MariaDB root password | `secure_root_pass` |
+| `MYSQL_DATABASE` | WordPress database name | `wordpress` |
+| `MYSQL_USER` | Database user | `wpuser` |
+| `MYSQL_PASSWORD` | Database user password | `secure_db_pass` |
+| `WP_ADMIN_USER` | WordPress admin username | `admin` |
+| `WP_ADMIN_PASSWORD` | WordPress admin password | `secure_admin_pass` |
+| `WP_ADMIN_EMAIL` | Admin email address | `admin@example.com` |
+| `WP_URL` | Site URL | `https://dchrysov.42.fr` |
+| `WP_TITLE` | Site title | `My WordPress Site` |
 
-vncviewer <DROPLET_PUBLIC_IP>:5901
-USER PASSWORD
+### Docker Compose
 
-scp -r 
+The `docker-compose.yml` defines:
+- Service dependencies
+- Network configuration
+- Volume mounts
+- Build contexts
+- Restart policies
 
-curl -v -4 --connect-timeout 3 http://dchrysov.42.fr      # should fail/refuse (no port 80 listener)
+### Volumes
 
-cd opt/
-sudo wget 'https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US' -O firefox.tar.bz2
-sudo tar xJf firefox.tar.bz2
-sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
-firefox &
-sudo snap install code --classic
+Two persistent volumes are configured:
 
+1. **inception_database**: MariaDB data
+   - Host path: `/home/dchrysov/data/database`
+   - Container path: `/var/lib/mysql`
 
-sudo apt remove docker docker-engine docker.io containerd runc
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg lsb-release
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo usermod -aG docker $USER
-newgrp docker
-docker --version
-docker run hello-world
+2. **inception_web**: WordPress files
+   - Host path: `/home/dchrysov/data/web`
+   - Container path: `/var/www/html`
+
+---
+
+## 🎮 Usage
+
+### Makefile Commands
+
+The project includes a comprehensive Makefile for easy management:
+
+```bash
+# Build and start all services
+make build
+
+# Start services (without rebuild)
+make up
+
+# Stop all services
+make down
+
+# Restart services
+make restart
+
+# View logs in files
+make logs
+
+# Check container status
+make status
+
+# Clean containers and volumes (keep images)
+make clean
+
+# Complete cleanup (including data)
+make fclean
+
+# Show available commands
+make help
+```
+
+### Direct Docker Compose Commands
+
+You can also use Docker Compose directly:
+
+```bash
+# View logs in real-time
+docker compose -f srcs/docker-compose.yml logs -f
+
+# View logs for specific service
+docker compose -f srcs/docker-compose.yml logs nginx
+
+# Execute command in container
+docker compose -f srcs/docker-compose.yml exec wordpress bash
+
+# Rebuild specific service
+docker compose -f srcs/docker-compose.yml up -d --build nginx
+```
+
+### Accessing Services
+
+- **WordPress Site**: https://dchrysov.42.fr
+- **WordPress Admin**: https://dchrysov.42.fr/wp-admin
+- **Database**: Accessible only within Docker network
+
+---
+
+## 📚 Documentation
+
+This project includes comprehensive documentation:
+
+ - **[USER_DOC.md](USER_DOC.md)**: End-user guide for installing, configuring, and operating the stack
+   - Prerequisites and environment setup
+   - Domain and hosts file configuration
+   - Building, starting, stopping services (Makefile and Compose)
+   - WordPress access and administration (users, themes, plugins)
+   - Troubleshooting, backup and restore procedures
+
+ - **[DEV_DOC.md](DEV_DOC.md)**: Developer-focused technical documentation
+   - Container architecture and design decisions
+   - Networking and volume management specifics for this implementation
+   - Dockerfile breakdowns and init script flows (NGINX/WordPress/MariaDB)
+   - Security considerations and customization guides (SSL, PHP versions, configs)
+   - Development workflow, debugging, and performance optimization tips
+
+---
+
+## 🔍 Troubleshooting
+
+### Quick Diagnostics
+
+```bash
+# Check if all containers are running
+docker ps
+
+# View container logs
+make logs
+
+# Check service status
+make status
+
+# Verify network connectivity
+docker network inspect inception
+
+# Check volumes
+docker volume ls
+```
+
+### Common Issues
+
+**Port 443 Permission Denied**
+- Solution: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for rootless Docker setup
+
+**Browser Certificate Warning**
+- Expected behavior with self-signed certificates
+- Accept the certificate to continue
+
+**Cannot Connect to Database**
+- Check that MariaDB container is healthy
+- Verify environment variables in `.env`
+
+For detailed solutions, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+---
+
+## 🔐 Security Considerations
+
+### Important Security Notes
+
+⚠️ **Default Passwords**: Change ALL default passwords in `srcs/.env` before deployment
+
+⚠️ **Self-Signed Certificates**: For production, use proper CA-signed certificates
+
+⚠️ **Exposed Ports**: Only port 443 should be accessible externally
+
+⚠️ **Secrets Management**: Never commit passwords to version control
+
+### Recommended Actions
+
+1. Use strong, unique passwords for all services
+2. Regularly update base images and dependencies
+3. Implement backup strategy for volumes
+4. Monitor container logs for suspicious activity
+5. Use Docker secrets for production deployments
+
+For comprehensive security guidelines, see [SECURITY.md](SECURITY.md).
+
+---
+
+## 🧪 Testing
+
+### Verify Installation
+
+```bash
+# Test HTTPS endpoint
+curl -k https://dchrysov.42.fr
+
+# Test database connectivity
+docker compose exec wordpress wp db check --allow-root
+
+# Check SSL certificate
+openssl s_client -connect dchrysov.42.fr:443 -servername dchrysov.42.fr
+
+# Verify WordPress installation
+docker compose exec wordpress wp core version --allow-root
+```
+
+---
+
+## 📖 Learning Resources
+
+### Docker & Containerization
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Docker Compose Specification](https://docs.docker.com/compose/compose-file/)
+- [Best Practices for Dockerfiles](https://docs.docker.com/develop/dev-best-practices/)
+
+### Web Services
+
+- [NGINX Documentation](https://nginx.org/en/docs/)
+- [WordPress CLI Documentation](https://wp-cli.org/)
+- [MariaDB Knowledge Base](https://mariadb.com/kb/en/)
+- [PHP-FPM Configuration](https://www.php.net/manual/en/install.fpm.php)
+
+### Security
+
+- [SSL/TLS Best Practices](https://wiki.mozilla.org/Security/Server_Side_TLS)
+- [Docker Security Best Practices](https://docs.docker.com/engine/security/)
+
+---
+
+## 🤝 Contributing
+
+This is an educational project from the 42 curriculum. While contributions are not expected, feedback and suggestions are welcome.
+
+### AI Usage Disclosure
+
+As per 42 guidelines, AI tools were used in this project for:
+- Technical explanations and concept clarification
+- Reducing repetitive configuration tasks
+- Code review and debugging assistance
+
+All AI-generated content was thoroughly understood, reviewed, tested, and peer-reviewed before inclusion.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👤 Author
+
+**dchrysov**
+- 42 Student
+- Project: Inception
+- Year: 2025
+
+---
+
+## 🙏 Acknowledgments
+
+- 42 Network for the comprehensive curriculum
+- Docker community for excellent documentation
+- Open source communities of NGINX, WordPress, and MariaDB
+
+---
+
+**Project Status**: ✅ Completed
+
+*Last Updated: December 13, 2025*
