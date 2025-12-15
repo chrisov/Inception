@@ -54,7 +54,7 @@ When the setup is up and running, we can then access the website `https://dchrys
 
 ### 2.3 Kill
 
-The setup can be killed with either of the corresponding make rules, as mentioned in [Section 2.1](#21-buildrun). It is important to specify the differences between those rules:
+The setup can be killed with either of the corresponding make rules, as mentioned in [*Section 2.1*](#21-buildrun). It is important to specify the differences between those rules:
 
   `make down` will just stop service, without affecting the website content.
   `make clean` will stop the service and delete all the mounted volumes in the container side.
@@ -74,7 +74,7 @@ The setup can be killed with either of the corresponding make rules, as mentione
 
 The Docker Compose file builds and orchestrates all the services together, so that they are able to communicate with each, through an internal network and provide access to the web server for the host machine.
 
-The Nginx container exposes the port 443, default for HTTPS requests (explained in [Section 3.1](#31-installation--run)). The Wordpress container communicates with Nginx through port 9000 (explained in [Section 3.3](#33-nginx-script-file)). The MariaDB container listens to port 3306, by default, to achieve inter-container communication.
+The Nginx container exposes the port 443, default for HTTPS requests (explained in [*Section 3.1*](#31-installation--run)). The Wordpress container communicates with Nginx through port 9000 (explained in [*Section 3.3*](#33-nginx-script-file)). The MariaDB container listens to port 3306, by default, to achieve inter-container communication.
 
 A Bridge Docker network is used to connect all the individual containers together. It creates a private network isolated from both the host network and the internet. This way only the containers in this network can have access to it, providing security and a clean multi container architecture.
 
@@ -246,7 +246,7 @@ The configuration for the WP-PHP instance is contained in the script file (*init
 
 The following points explain the script file, line by line:
 
-- `set -e`: reference [Section 3.3](#33-nginx-script-file).
+- `set -e`: reference [*Section 3.3*](#33-nginx-script-file).
 - `cd`: change into the wp-php config directory.
 - `if...fi`: Downloads the WP-CLI if not already existing.
 - `if...fi`: Downloads the WP core, if not already existing, and creates the database as well as the admin user, based on the credentials in the *.env* file.
@@ -359,7 +359,7 @@ The configuration script necessary to run the mariadb service creates and sets u
 
 A line by line explanation follows:
 
-- `set -e`: reference [section 3.3](#33-nginx-script-file).
+- `set -e`: reference [*Section 3.3*](#33-nginx-script-file).
 - `FILE`: define the configuration file.
 - `sed`: create the socket.
 - `mkdir`: create the directory to install the mysql service.
