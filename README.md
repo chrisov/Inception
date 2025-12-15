@@ -99,7 +99,7 @@ Nginx is an open source web server and reverse proxy service.
 - It can also handle encryption (TLS/SSL certificates), so that apps don't need to.
 
 
-### 3.1 Installation / Run
+### 3.1 Installation / run
 
 <div align="center">
 
@@ -195,17 +195,17 @@ Wordpress is an open source Content Management System (CMS), which basically mea
 ### 4.1 Installation / run
 
 <div align="center">
-  
-| Command                             | Description                                |
-|-------------------------------------|--------------------------------------------|
-| `$ apt install php8.2-fpm`          | Installs PHP-FPM                           |
-| `$ apt install php8.2-mysql`        | Installs the PHP MySQL extension           |
-| `$ apt install apt-transport-https` | Enable HTTPS Support                       |
-| `$ apt install ca-certificates`     | Trust Secure Connections                   |
-| `$ apt install lsb-release`         | Identify the OS                            |
-| `$ apt install wget`                | Download Tool                              |
-| `$ wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg` | Download and Trust the Key                                                         |
-| `$ echo "..."`                      | Add the Repository URL                     |
+
+  | Command                             | Description                                |
+  |-------------------------------------|--------------------------------------------|
+  | `$ apt install php8.2-fpm`          | Installs PHP-FPM                           |
+  | `$ apt install php8.2-mysql`        | Installs the PHP MySQL extension           |
+  | `$ apt install apt-transport-https` | Enable HTTPS Support                       |
+  | `$ apt install ca-certificates`     | Trust Secure Connections                   |
+  | `$ apt install lsb-release`         | Identify the OS                            |
+  | `$ apt install wget`                | Download Tool                              |
+  | `$ wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg` | Download and Trust the Key                                                         |
+  | `$ echo "..."`                      | Add the Repository URL                     |
 
   ***Table T4.1.1***: *Wordpress Dockerfile dependencies.*
   
@@ -316,23 +316,30 @@ MariaDB is an open source database management system, similar to MySQL in terms 
 
 ### 5.1 Installation / run
 
-| Command                               | Description                               |
-|---------------------------------------|-------------------------------------------|
-| `$ sudo apt install mariadb-server`   | Sets up the database engine in the system |
-| `$ sudo mysql -u root -p`             | Access MariaDB as root user               |
-| `$ sudo systemctl start mariadb`      | Start MariaDB engine                      |
-| `$ sudo systemctl enable mariadb`     | Enables MariaDB service on boot           |
-| `$ sudo systemctl status mariadb`     | Checks MariaDB service's status           |
-| `$ sudo systemctl restart mariadb`    | Restarts after config changes             |
-| `$ sudo systemctl stop mariadb`       | Stops MariaDB engine                      |
-| `$ sudo mysql_secure_installation`    |                                           |
+<div align="center">
 
+  | Command                               | Description                               |
+  |---------------------------------------|-------------------------------------------|
+  | `$ sudo apt install mariadb-server`   | Sets up the database engine in the system |
+  | `$ sudo mysql -u root -p`             | Access MariaDB as root user               |
+  | `$ sudo systemctl start mariadb`      | Start MariaDB engine                      |
+  | `$ sudo systemctl enable mariadb`     | Enables MariaDB service on boot           |
+  | `$ sudo systemctl status mariadb`     | Checks MariaDB service's status           |
+  | `$ sudo systemctl restart mariadb`    | Restarts after config changes             |
+  | `$ sudo systemctl stop mariadb`       | Stops MariaDB engine                      |
+  | `$ sudo mysql_secure_installation`    | Runs the secure setup wizard              |
+
+  ***Table T5.1.1***: *Useful commands for MariaDB*
+
+  </div>
+<br>
 
 ### 5.2 Dockerfile
 
 The Dockerfile for MariaDB is also simple enough:
 
 <div align="center">
+
   <img src="https://raw.githubusercontent.com/chrisov/Inception/dc59c851d54d06cd33472b939f34ae4ce7511249/srcs/requirements/mariadb/mariadb_df.png" width="400" alt="MariaDB Dockerfile"/>
   <br>
   
@@ -349,6 +356,7 @@ It is built upon the same lightweight debian image and apart from installing all
 The configuration script necessary to run the mariadb service creates and sets up the database.
 
 <div align="center">
+  
   <img src="https://raw.githubusercontent.com/chrisov/Inception/dc59c851d54d06cd33472b939f34ae4ce7511249/srcs/requirements/mariadb/mariadb_init.png" width="400" alt="wp-php script"/>
   <br>
   
@@ -407,14 +415,20 @@ SELECT * FROM <TABLE_NAME>
 
 ### 5.5 SQL Queries
 
-| SQL Commands | Constraints | Configuration                           |
-|--------------|-------------|-----------------------------------------|
-| CREATE	     | PRIMARY KEY | /etc/mysql/mariadb.conf.d/50-server.cnf |
-| INSERT       | FOREIGN KEY | 3306 (Default Port)                     |
-| DELETE
-| SELECT
-| UPDATE
+<div align="center">
 
+  | SQL Commands | Constraints | Configuration                           |
+  |--------------|-------------|-----------------------------------------|
+  | CREATE	     | PRIMARY KEY | /etc/mysql/mariadb.conf.d/50-server.cnf |
+  | INSERT       | FOREIGN KEY | 3306 (Default Port)                     |
+  | DELETE       | WHERE clause to scope deletions | 3306 (Default Port) |
+  | SELECT       | WHERE clause to filter results  | 3306 (Default Port) |
+  | UPDATE       | WHERE clause to target rows     | 3306 (Default Port) |
+
+  ***Table T5.5.1***: *Usefull SQL Queries*
+
+</div>
+<br>
 
 <div align="right">
   <a href="#top">⬆️ Return to top</a>
