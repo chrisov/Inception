@@ -504,6 +504,7 @@ To access the droplet, after finish configuring it, one needs to follow Steps 7 
 - During the evaluation process, it will be necessary to prove that the website is rejecting the http requests. This will be impossible to do through the browser directly, because firefox redirects the http requests to https by default. Therefore, the following command can be useful to prove this point:
 
 `curl -v -4 --connect-timeout 3 http://dchrysov.42.fr` (Should diplay 'connection refused')
+
 `curl -v -4 --connect-timeout 3 https://dchrysov.42.fr` (Should diplay the connection's details)
 
 ****
