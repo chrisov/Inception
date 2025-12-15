@@ -86,6 +86,19 @@ Docker Volumes are used for persistent data. Containers are isolated setups by d
 
 <br>
 
+### 2.5 Environment file
+
+It is necessary to keep a .env file in the srcs/ directory, because the compose file is dependent on it. It is generally advised strongly against sharing .env files, even for experimental projects, like this one. Therefore, follows a general structure of the appropriate environmental file, with all the necessary fields for the setup to be working:
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/chrisov/Inception/d0866ff03db3fad21f84cdfd86becb96772f2442/srcs/requirements/env.png" width="400" alt="env template"/>
+  <br>
+  
+  ***Figure F3.2.1***: *.env template*
+
+</div>
+<br>
+
 ## 3. Nginx
 
 Nginx is an open source web server and reverse proxy service. 
