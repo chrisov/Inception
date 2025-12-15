@@ -94,7 +94,7 @@ It is necessary to keep a .env file in the srcs/ directory, because the compose 
   <img src="https://raw.githubusercontent.com/chrisov/Inception/d0866ff03db3fad21f84cdfd86becb96772f2442/srcs/requirements/env.png" width="400" alt="env template"/>
   <br>
   
-  ***Figure F3.2.1***: *.env template*
+  ***Figure F2.5.1***: *.env template*
 
 </div>
 <br>
