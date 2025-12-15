@@ -1,6 +1,6 @@
-SRCDIR := srcs
-LOGDIR := logs
-DATADIR := /home/dchrysov/data
+SRCDIR := $(CURDIR)/srcs
+LOGDIR := $(CURDIR)/logs
+DATADIR := $(CURDIR)/data
 COMPOSE_FILE = $(SRCDIR)/docker-compose.yml
 export COMPOSE_FILE
 
@@ -22,6 +22,9 @@ datadir:
 build: datadir
 	@echo "$(GREEN)Building services...$(NC)"
 	$(COMPOSE) up --build -d
+	@bash -c 'for i in {0..60}; do pct=$$(($${i} * 100 / 60)); bar=$$(printf "#%.0s" $$(seq 1 $$(($${i} * 30 / 60))));printf "\r[%-30s] %d%%" "$$bar" $$pct; sleep 1; done; echo ""'
+	@echo "$(GREEN)Services ready!$(NC)"
+	
 
 up: datadir
 	@echo "$(GREEN)Starting LEMP stack...$(NC)"
@@ -65,7 +68,7 @@ clean:
 	@rm -rf $(LOGDIR)
 
 fclean: clean
-	@sudo rm -rf ~/data/*
+	@sudo rm -rf /home/dimitris/Documents/42/github_repo/inception/data/
 
 help:
 	@echo "Available commands:"
