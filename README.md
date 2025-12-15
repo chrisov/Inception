@@ -448,73 +448,62 @@ sudo -aG sudoers <USERNAME>
 
 `vncviewer <DROPLET_PUBLIC_IP>:<5901>`
 
-10. The remote Desktop window should be up and running. It will be necessary to install firefox (and vscode ?):
+10. The remote Desktop window should be up and running. It will be necessary to install firefox, docker (and VSCode ?):
 
 ```
 sudo apt update
 sudo apt upgrade -y
 ```
 
-10-1. 
+10-1. Install Firefox:
 ```
 sudo snap remove firefox
 sudo apt purge firefox
+cd opt/
+sudo wget 'https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US' -O firefox.tar.bz2
+sudo tar xJf firefox.tar.bz2
+sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
+firefox &
 ```
+
+10-2. Install Docker:
+
+```
+sudo apt remove docker docker-engine docker.io containerd runc
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker $USER
+newgrp docker
+docker --version
+docker run hello-world
+```
+
+10-3. Install VSCode
+
+`sudo snap install code --classic`
 
 
 ### 6.2 Access
 
-To access the droplet, after finish configuring it, one needs to only follow Steps 7 - 9
-
-1.  create the droplet (ubuntu desktop)
-
-2.  ssh root@<DROPLET_PUBLIC_IP>
-
-sudo apt update && sudo apt upgrade -y
-sudo apt update
-sudo apt install xubuntu-desktop -y
-sudo apt install xfce4 xfce4-goodies tigervnc-standalone-server x11-xserver-utils xterm dbus-x11 -y
-sudo apt install xfce4-terminal xfce4-panel xfce4-session -y
-sudo apt install tigervnc-common -y
-sudo apt install x11-xserver-utils -y
-sudo apt install lxde -y
-
-nano ~/.vnc/xstartup
-
-  #!/bin/bash
-  [ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
-
-  export XKL_XMODMAP_DISABLE=1
-
-  unset SESSION_MANAGER
-  unset DBUS_SESSION_BUS_ADDRESS
-
-  exec startxfce4
-
-chmod +x ~/.vnc/xstartup
-adduser vncuser
-su - vncuser
-vncserver :1
-
-vncserver -list : Should show the running process
-
-ss -tulnp | grep 5901: should display '0.0.0.0:5901'
-if it displays 'localhost:5901', configure firewall in the droplet:
-
-  sudo ufw status
-  sudo ufw allow 5901/tcp
-  sudo ufw reload
-
-(?????)
-nano ~/.vnc/config
-  localhost=no
+To access the droplet, after finish configuring it, one needs to follow Steps 7 - 9.
 
 
-3. host machine
+### 6.3. Useful Commands
 
-vncviewer <DROPLET_PUBLIC_IP>:5901
-USER PASSWORD
+- During the evaluation process, cloning vogsphere directly in the cloud would not be possible, therefore cloning it in the host machine and copying the repo in the VM is the only way. For that, a secure copy command should be executed:
 
-scp -r 
+`scp -r <SOURCE_DIRECTORY> <USERNAME>@<DROPLET_PUBLIC_IP:<TARGET_DIRECTORY>`
 
+- During the evaluation process, it will be necessary to prove that the website is rejecting the http requests. This will be impossible to do through the browser directly, because firefox redirects the http requests to https by default. Therefore, the following command can be useful to prove this point:
 
+`curl -v -4 --connect-timeout 3 http://dchrysov.42.fr` (Should diplay 'connection refused')
+`curl -v -4 --connect-timeout 3 https://dchrysov.42.fr` (Should diplay the connection's details)
+
+****
